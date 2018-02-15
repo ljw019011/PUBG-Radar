@@ -411,7 +411,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                 syFix > 0 && syFix < windowHeight
               ) {
                 // draw(iconImages[it], sx, syFix)
-                draw(iconImages[it], sx, syFix, iconScale, -iconScale,
+                draw(iconImages[it], sx - iconScale / 2, syFix + iconScale / 2, iconScale, -iconScale,
                      0, 0, 32, 32,
                      false, true)
               } else {
