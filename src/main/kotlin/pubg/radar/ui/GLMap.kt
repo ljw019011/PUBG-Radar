@@ -83,6 +83,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
 
   override fun onGameOver() {
     camera.zoom = 1 / 4f
+    itemCamera.zoom = 1 / 4f
 
     aimStartTime.clear()
     attackLineStartTime.clear()
@@ -113,12 +114,13 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
   lateinit var nameFont: BitmapFont
   lateinit var itemFont: BitmapFont
   lateinit var fontCamera: OrthographicCamera
+  lateinit var itemCamera: OrthographicCamera
   lateinit var camera: OrthographicCamera
   lateinit var alarmSound: Sound
 
-  val tileZooms = listOf("256", "512", "1024", "2048", "4096", "8192")
-  val tileRowCounts = listOf(1, 2, 4, 8, 16, 32)
-  val tileSizes = listOf(819200f, 409600f, 204800f, 102400f, 51200f, 25600f)
+  val tileZooms = listOf("256", "512", "1024", "2048", "4096"/*, "8192"*/)
+  val tileRowCounts = listOf(1, 2, 4, 8, 16/*, 32*/)
+  val tileSizes = listOf(819200f, 409600f, 204800f, 102400f, 51200f/*, 25600f*/)
 
   val layout = GlyphLayout()
   var windowWidth = initialWindowWidth
@@ -144,12 +146,14 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
 
   override fun scrolled(amount: Int): Boolean {
     camera.zoom *= 1.1f.pow(amount)
+    itemCamera.zoom *= 1.1f.pow(amount)
     return true
   }
 
   override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
     if (button == RIGHT) {
       pinLocation.set(pinLocation.set(screenX.toFloat(), screenY.toFloat()).windowToMap())
+      println(pinLocation)
       return true
     } else if (button == LEFT) {
       dragging = true
@@ -195,6 +199,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
       update()
     }
 
+    itemCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
     fontCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
     alarmSound = Gdx.audio.newSound(Gdx.files.internal("Alarm.wav"))
     // mapErangel = Texture(Gdx.files.internal("Erangel.bmp"))
@@ -285,12 +290,14 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
       mapTiles = if (isErangel) mapErangelTiles else mapMiramarTiles
     else return
     val currentTime = System.currentTimeMillis()
+    // selfCoords = Vector2(409600f, 409600f)
     val (selfX, selfY) = selfCoords
     val selfDir = Vector2(selfX, selfY).sub(preSelfCoords)
     if (selfDir.len() < 1e-8)
       selfDir.set(preDirection)
 
     //move camera
+    // camera.position.set(selfX, selfY, 0f)
     camera.position.set(selfX + screenOffsetX, selfY + screenOffsetY, 0f)
     camera.update()
 
@@ -304,7 +311,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     val cameraTileScale = Math.max(windowWidth, windowHeight) / camera.zoom
     var useScale = 0
     when {
-        cameraTileScale > 4096 -> useScale = 5
+        // cameraTileScale > 4096 -> useScale = 5
         cameraTileScale > 2048 -> useScale = 4
         cameraTileScale > 1024 -> useScale = 3
         cameraTileScale > 512 -> useScale = 2
@@ -328,8 +335,8 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
           val tileStartX = (j-1)*tileSize
           val tileStartY = (i-1)*tileSize
           draw(mapTiles[tileZoom]!![y]!![x], tileStartX, tileStartY, tileSize, tileSize,
-           0, 0, 256, 256,
-           false, true)
+               0, 0, 256, 256,
+               false, true)
         }
       }
     }
@@ -359,7 +366,18 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
       littleFont.draw(spriteBatch, "$time", x, windowHeight - y)
       safeZoneHint()
       drawPlayerInfos(typeLocation[Player])
-
+    }
+    // paint(itemCamera.combined) {
+    //   val (sx, sy) = Vector2(404713.8f,407978.2f).mapToWindow()
+    //   val syFix = windowHeight - sy
+    //   val iconScale = 2f / camera.zoom
+    //   if (iconScale > 16) {
+    //     draw(iconImages["M4"], sx - iconScale / 2, syFix + iconScale / 2, iconScale, -iconScale,
+    //         0, 0, 32, 32,
+    //         false, true)
+    //   }
+    // }
+    paint(itemCamera.combined) {
       var itemNameDrawBlacklist = arrayListOf(
         "AR.Stock",
         "S.Loops",
@@ -381,20 +399,25 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
           val (sx, sy) = Vector2(x, y).mapToWindow()
           val syFix = windowHeight - sy
 
-          var yOffset = 2
+          // var yOffset = 2
           // println(items)
           items.forEach {
             if (it !in itemNameDrawBlacklist) {
+              val iconScale = 2f / camera.zoom
               if (
                 it in iconImages &&
+                iconScale > 16 &&
                 sx > 0 && sx < windowWidth &&
                 syFix > 0 && syFix < windowHeight
               ) {
-                draw(iconImages[it], sx, syFix)
+                // draw(iconImages[it], sx, syFix)
+                draw(iconImages[it], sx, syFix, iconScale, -iconScale,
+                     0, 0, 32, 32,
+                     false, true)
               } else {
                 // itemFont.draw(spriteBatch, it, sx, windowHeight - sy - yOffset)
               }
-              yOffset = yOffset + 2
+              // yOffset = yOffset + 2
             }
           }
         }
@@ -817,6 +840,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     windowWidth = width.toFloat()
     windowHeight = height.toFloat()
     camera.setToOrtho(true, windowWidth * windowToMapUnit, windowHeight * windowToMapUnit)
+    itemCamera.setToOrtho(false, windowWidth, windowHeight)
     fontCamera.setToOrtho(false, windowWidth, windowHeight)
   }
 
