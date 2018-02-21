@@ -5,11 +5,11 @@ import pubg.radar.deserializer.channel.ActorChannel.Companion.actors
 import pubg.radar.struct.NetGUIDCache.Companion.guidCache
 
 class NetGuidCacheObject(
-    val pathName: String,
-    val outerGUID: NetworkGUID,
-    val networkChecksum: Int = 0,
-    val bNoLoad: Boolean = false,
-    val IgnoreWhenMissing: Boolean = false) {
+  val pathName: String,
+  val outerGUID: NetworkGUID,
+  val networkChecksum: Int = 0,
+  val bNoLoad: Boolean = false,
+  val IgnoreWhenMissing: Boolean = false) {
   var holdObj: Any? = null
   override fun toString(): String {
     return "{path='$pathName', outer[$outerGUID]=${guidCache.getObjectFromNetGUID(outerGUID)}}"

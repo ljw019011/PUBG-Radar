@@ -56,6 +56,14 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.*
 
+import java.util.Random
+
+val random = Random()
+
+fun rand(from: Int, to: Int) : Int {
+    return random.nextInt(to - from) + from
+}
+
 typealias renderInfo = tuple4<Actor, Float, Float, Float>
 
 fun Float.d(n: Int) = String.format("%.${n}f", this)
@@ -107,7 +115,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
   lateinit var mapErangelTiles: MutableMap<String, MutableMap<String, MutableMap<String, Texture>>>
   lateinit var mapMiramarTiles: MutableMap<String, MutableMap<String, MutableMap<String, Texture>>>
   lateinit var mapTiles: MutableMap<String, MutableMap<String, MutableMap<String, Texture>>>
-  lateinit var iconImages: Map<String, Texture>
+  lateinit var iconImages: Icons
   // lateinit var map: Texture
   lateinit var largeFont: BitmapFont
   lateinit var littleFont: BitmapFont
@@ -204,42 +212,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     alarmSound = Gdx.audio.newSound(Gdx.files.internal("Alarm.wav"))
     // mapErangel = Texture(Gdx.files.internal("Erangel.bmp"))
     // mapMiramar = Texture(Gdx.files.internal("Miramar.bmp"))
-    iconImages = mapOf(
-      "AR.Supp" to Texture(Gdx.files.internal("icons/AR.Supp.png")),
-      "S.Supp" to Texture(Gdx.files.internal("icons/S.Supp.png")),
-      "AR.Comp" to Texture(Gdx.files.internal("icons/AR.Comp.png")),
-      "S.Comp" to Texture(Gdx.files.internal("icons/S.Comp.png")),
-      "AR.ExtQ" to Texture(Gdx.files.internal("icons/AR.ExtQ.png")),
-      "S.ExtQ" to Texture(Gdx.files.internal("icons/S.ExtQ.png")),
-      "AR.Ext" to Texture(Gdx.files.internal("icons/AR.Ext.png")),
-      "S.Ext" to Texture(Gdx.files.internal("icons/S.Ext.png")),
-      "AR.Stock" to Texture(Gdx.files.internal("icons/AR.Stock.png")),
-      "CheekPad" to Texture(Gdx.files.internal("icons/CheekPad.png")),
-      "A.Grip" to Texture(Gdx.files.internal("icons/A.Grip.png")),
-      "V.Grip" to Texture(Gdx.files.internal("icons/V.Grip.png")),
-      "556" to Texture(Gdx.files.internal("icons/556.png")),
-      "98k" to Texture(Gdx.files.internal("icons/98k.png")),
-      "Mini" to Texture(Gdx.files.internal("icons/Mini.png")),
-      "M4" to Texture(Gdx.files.internal("icons/M4.png")),
-      "Scar" to Texture(Gdx.files.internal("icons/Scar.png")),
-      "Ak" to Texture(Gdx.files.internal("icons/Ak.png")),
-      "8x" to Texture(Gdx.files.internal("icons/8x.png")),
-      "4x" to Texture(Gdx.files.internal("icons/4x.png")),
-      "2x" to Texture(Gdx.files.internal("icons/2x.png")),
-      "R.Dot" to Texture(Gdx.files.internal("icons/R.Dot.png")),
-      "Arm3" to Texture(Gdx.files.internal("icons/Arm3.png")),
-      "Arm2" to Texture(Gdx.files.internal("icons/Arm2.png")),
-      "Helm3" to Texture(Gdx.files.internal("icons/Helm3.png")),
-      "Helm2" to Texture(Gdx.files.internal("icons/Helm2.png")),
-      "Bag3" to Texture(Gdx.files.internal("icons/Bag3.png")),
-      "Bag2" to Texture(Gdx.files.internal("icons/Bag2.png")),
-      "Pan" to Texture(Gdx.files.internal("icons/Pan.png")),
-      "MedKit" to Texture(Gdx.files.internal("icons/MedKit.png")),
-      "FirstAid" to Texture(Gdx.files.internal("icons/FirstAid.png")),
-      "Pain" to Texture(Gdx.files.internal("icons/Pain.png")),
-      "Drink" to Texture(Gdx.files.internal("icons/Drink.png")),
-      "Grenade" to Texture(Gdx.files.internal("icons/Grenade.png"))
-    )
+    iconImages = Icons(Texture(Gdx.files.internal("item-sprites.png")), 64)
     mapErangelTiles = mutableMapOf()
     mapMiramarTiles = mutableMapOf()
     var cur = 0
@@ -323,11 +296,12 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     var tileZoom = tileZooms[useScale]
     var tileRowCount = tileRowCounts[useScale]
     var tileSize = tileSizes[useScale]
+
+    val xMin = (tlX.toInt() / tileSize.toInt()).coerceIn(1, tileRowCount)
+    val xMax = ((brX.toInt() + tileSize.toInt()) / tileSize.toInt()).coerceIn(1, tileRowCount)
+    val yMin = (tlY.toInt() / tileSize.toInt()).coerceIn(1, tileRowCount)
+    val yMax = ((brY.toInt() + tileSize.toInt()) / tileSize.toInt()).coerceIn(1, tileRowCount)
     paint(camera.combined) {
-      val xMin = (tlX.toInt() / tileSize.toInt()).coerceIn(1, tileRowCount)
-      val xMax = ((brX.toInt() + tileSize.toInt()) / tileSize.toInt()).coerceIn(1, tileRowCount)
-      val yMin = (tlY.toInt() / tileSize.toInt()).coerceIn(1, tileRowCount)
-      val yMax = ((brY.toInt() + tileSize.toInt()) / tileSize.toInt()).coerceIn(1, tileRowCount)
       for (i in yMin..yMax) {
         val y = if (i < 10) "0$i" else "$i"
         for (j in xMin..xMax) {
@@ -367,29 +341,21 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
       safeZoneHint()
       drawPlayerInfos(typeLocation[Player])
     }
-    // paint(itemCamera.combined) {
-    //   val (sx, sy) = Vector2(404713.8f,407978.2f).mapToWindow()
-    //   val syFix = windowHeight - sy
-    //   val iconScale = 2f / camera.zoom
-    //   if (iconScale > 16) {
-    //     draw(iconImages["M4"], sx - iconScale / 2, syFix + iconScale / 2, iconScale, -iconScale,
-    //         0, 0, 32, 32,
-    //         false, true)
-    //   }
-    // }
+
+    var itemNameDrawBlacklist = arrayListOf(
+      "AR.Stock",
+      "S.Loops",
+      "FlashHider",
+      "Choke",
+      "V.Grip",
+      "556",
+      "762",
+      "Ak",
+      "Sks",
+      "Grenade"
+    )
+    val iconScale = 1.5f / camera.zoom
     paint(itemCamera.combined) {
-      var itemNameDrawBlacklist = arrayListOf(
-        "AR.Stock",
-        "S.Loops",
-        "FlashHider",
-        "Choke",
-        "V.Grip",
-        "556",
-        "762",
-        "Ak",
-        "Sks",
-        "Grenade"
-      )
       droppedItemLocation.values.asSequence().filter { it.second.isNotEmpty() }
         .forEach {
           val (x, y) = it.first
@@ -403,17 +369,18 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
           // println(items)
           items.forEach {
             if (it !in itemNameDrawBlacklist) {
-              val iconScale = 2f / camera.zoom
               if (
-                it in iconImages &&
                 iconScale > 16 &&
                 sx > 0 && sx < windowWidth &&
                 syFix > 0 && syFix < windowHeight
               ) {
-                // draw(iconImages[it], sx, syFix)
-                draw(iconImages[it], sx - iconScale / 2, syFix + iconScale / 2, iconScale, -iconScale,
-                     0, 0, 32, 32,
-                     false, true)
+                iconImages.setIcon(it)
+                if (iconScale > 16) {
+                  draw(
+                    iconImages.icon,
+                    sx - iconScale / 2, syFix + iconScale / 2, iconScale, iconScale
+                  )
+                }
               } else {
                 // itemFont.draw(spriteBatch, it, sx, windowHeight - sy - yOffset)
               }
@@ -858,9 +825,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     littleFont.dispose()
     // mapErangel.dispose()
     // mapMiramar.dispose()
-    for ((key, image) in iconImages) {
-      image.dispose()
-    }
+    iconImages.iconSheet.dispose()
 
     var cur = 0
     tileZooms.forEach{
