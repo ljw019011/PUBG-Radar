@@ -370,17 +370,15 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
           items.forEach {
             if (it !in itemNameDrawBlacklist) {
               if (
-                iconScale > 16 &&
+                iconScale > 8 &&
                 sx > 0 && sx < windowWidth &&
                 syFix > 0 && syFix < windowHeight
               ) {
                 iconImages.setIcon(it)
-                if (iconScale > 16) {
-                  draw(
-                    iconImages.icon,
-                    sx - iconScale / 2, syFix + iconScale / 2, iconScale, iconScale
-                  )
-                }
+                draw(
+                  iconImages.icon,
+                  sx - iconScale / 2, syFix + iconScale / 2, iconScale, iconScale
+                )
               } else {
                 // itemFont.draw(spriteBatch, it, sx, windowHeight - sy - yOffset)
               }
@@ -404,7 +402,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
       circle(pinLocation, pinRadius * zoom, 10)
       //draw self
       drawPlayer(LIME, tuple4(null, selfX, selfY, selfDir.angle()))
-      drawItem()
+      // drawItem()
       drawAirDrop(zoom)
       drawCorpse()
       drawAPawn(typeLocation, selfX, selfY, zoom, currentTime)
