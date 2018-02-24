@@ -45,11 +45,11 @@ class Icons {
         "R45" to arrayOf(4, 6),
         // 7 MGs
         "Uzi" to arrayOf(0, 7),
-        "Ump" to arrayOf(0, 7),
-        "Vector" to arrayOf(0, 7),
-        "Tommy" to arrayOf(0, 7),
-        "Dp" to arrayOf(0, 7),
-        "M249" to arrayOf(0, 7),
+        "Ump" to arrayOf(1, 7),
+        "Vector" to arrayOf(2, 7),
+        "Tommy" to arrayOf(3, 7),
+        "Dp" to arrayOf(4, 7),
+        "M249" to arrayOf(5, 7),
         // 8 ARs
         "M16" to arrayOf(0, 8),
         "Ak" to arrayOf(1, 8),
