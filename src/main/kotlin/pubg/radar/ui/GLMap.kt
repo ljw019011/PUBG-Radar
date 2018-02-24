@@ -91,7 +91,6 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
 
   override fun onGameOver() {
     camera.zoom = 1 / 4f
-    itemCamera.zoom = 1 / 4f
 
     aimStartTime.clear()
     attackLineStartTime.clear()
@@ -154,7 +153,6 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
 
   override fun scrolled(amount: Int): Boolean {
     camera.zoom *= 1.1f.pow(amount)
-    itemCamera.zoom *= 1.1f.pow(amount)
     return true
   }
 
